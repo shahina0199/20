@@ -1,0 +1,157 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+   
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user{
+  id              BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  firstName       String      @db.VarChar(100)
+  middleName      String      @db.VarChar(100)
+  lastName        String      @db.VarChar(100)
+  mobile          String      @unique @db.VarChar(100)
+  email           String      @unique @db.VarChar(100)
+  password        String      @db.VarChar(100)
+  admin           Int         @db.TinyInt @default(1)
+  registeredAt    DateTime    @db.Timestamp(0)
+  lastLogin       DateTime    @db.Timestamp(0)
+  createdAt       DateTime    @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime    @default(now()) @db.Timestamp(0) @updatedAt
+
+  product         product[]
+  order           order[]
+  cart            cart[]
+
+}
+
+
+model category {
+  id              BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  title           String     @db.VarChar(100)
+  metaTitle       String     @db.VarChar(100)
+  slug            String     @db.VarChar(100)
+  createdAt       DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime   @default(now()) @db.Timestamp(0)
+ 
+}
+
+
+model product {
+  id              BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  firstName       String                @db.VarChar(100)
+  metaTitle       String                @db.VarChar(100)
+  slug            String                @db.VarChar(100)
+  summery         String                @db.VarChar(100)
+  price           Int
+  discount        Int
+  userId          BigInt                @db.UnsignedBigInt
+  publishedAt     DateTime              @default(now()) @db.Timestamp(0)
+  startsdAt       DateTime              @default(now()) @db.Timestamp(0)
+  endsdAt         DateTime              @default(now()) @db.Timestamp(0)
+
+  createdAt       DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime              @default(now()) @db.Timestamp(0)
+  
+  user              user                @relation(fields: [userId], references: [id], map: "product_userId_foreign")
+  product_review    product_review[]
+  product_meta      product_meta[]
+ 
+}
+
+model order {
+  id              BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  title           String                @db.VarChar(100)
+  token           String                @db.VarChar(100)
+  subTotal        Int               
+  itemDiscount    Int
+  tax             Int
+  total           Int
+  discount        Int
+  grandTotal      Int
+  firstName       String                @db.VarChar(100)
+  middleName      String                @db.VarChar(100)
+  lastName        String                @db.VarChar(100)
+  email           String                @db.VarChar(100)
+  city            String                @db.VarChar(100)
+  country         String                @db.VarChar(100)
+  userId          BigInt                @db.UnsignedBigInt
+
+  createdAt       DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime              @default(now()) @db.Timestamp(0)
+
+  user              user                @relation(fields: [userId], references: [id], map: "order_userId_foreign")
+ 
+}
+
+model cart {
+  id              BigInt                @id @default(autoincrement()) @db.UnsignedBigInt
+  title           String                @db.VarChar(100)
+  sessionId       String                @db.VarChar(100)
+  token           String                @db.VarChar(100)
+  status          String                @db.VarChar(100)
+  firstName       String                @db.VarChar(100)
+  middleName      String                @db.VarChar(100)
+  lastName        String                @db.VarChar(100)
+  email           String                @db.VarChar(100)
+  city            String                @db.VarChar(100)
+  country         String                @db.VarChar(100)
+  userId          BigInt                @db.UnsignedBigInt
+
+  createdAt       DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime              @default(now()) @db.Timestamp(0)
+
+  user              user                @relation(fields: [userId], references: [id], map: "cart_userId_foreign")
+ 
+}
+
+
+model migrations {
+  id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  migration   String  @db.VarChar(255)
+  batch       Int
+}
+
+model personal_access_tokens {
+  id              BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  tokenable_type  String     @db.VarChar(255)
+  tokenable_id    BigInt     @db.UnsignedBigInt
+  name            String     @db.VarChar(255)
+  token           String     @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
+  abilities       String?    @db.Text
+  last_usedAt     DateTime?  @db.Timestamp(0)
+  expiresAt       DateTime?  @db.Timestamp(0)
+  createdAt       DateTime?  @db.Timestamp(0)
+  updatedAt       DateTime?  @db.Timestamp(0)
+
+  @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
+}
+
+model product_review {
+  id                BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  title             String    @db.VarChar(100)
+  rating            String    @db.VarChar(100)
+  content           String    @db.VarChar(100)
+  productId         BigInt    @db.UnsignedBigInt
+  createdAt         DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime  @default(now()) @db.Timestamp(0)
+  product           product   @relation(fields: [productId], references: [id], map: "product_review_productId_foreign")
+
+}
+
+model product_meta {
+  id          BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  key         String      @db.VarChar(50)
+  content     String      @db.Text
+  productId   BigInt      @db.UnsignedBigInt
+  createdAt   DateTime    @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime    @default(now()) @db.Timestamp(0)
+  products    product     @relation(fields: [productId], references: [id], map: "product_meta_productId_foreign")
+
+}
+
